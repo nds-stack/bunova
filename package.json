@@ -22,7 +22,7 @@
     "typecheck": "tsc --noEmit",
     "typecheck:plugins": "cd test-plugins && tsc --noEmit --project ../tsconfig.json 2>nul || echo Plugin tests skipped (standalone)",
     "bench": "bun run bench/runtime.bench.ts",
-    "prepublishOnly": "bun run lint && bun run typecheck && bun test && bun run build",
+    "prepublishOnly": "bun run lint && bun run typecheck && bun test ./test/ && bun run build",
     "build": "bun build ./src/index.ts --outdir=./dist --target=bun --format=esm && tsc -p tsconfig.build.json",
     "clean": "bun run --bun \"rm -rf dist\""
   },
