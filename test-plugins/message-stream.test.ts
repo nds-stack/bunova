@@ -11,11 +11,9 @@ describe("MessageStream IPC", () => {
     expect(typeof writeFrame).toBe("function")
   })
 
-  test("MessageStream readMessageFrom parses single message", async () => {
+  test("MessageStream push + onMessage delivers message", async () => {
     const stream = new MessageStream()
     const encoder = new TextEncoder()
-
-    // Simulate a stream that pushes valid data
     const msg = JSON.stringify({ type: "test", value: 42 })
     const data = encoder.encode(msg)
     const header = new Uint8Array(4)
@@ -24,13 +22,9 @@ describe("MessageStream IPC", () => {
     frame.set(header, 0)
     frame.set(data, 4)
 
-    stream.push(frame)
-
-    // Read via promise
     const result = await new Promise<unknown>((resolve) => {
       stream.onMessage((m) => resolve(m))
-      // push again to trigger flush
-      stream.push(new Uint8Array(0))
+      stream.push(frame)
     })
 
     expect(result).toEqual({ type: "test", value: 42 })

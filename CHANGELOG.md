@@ -1,5 +1,23 @@
 # Changelog
 
+## [0.2.0-beta.0] — 2026-05-18
+
+### Changed
+- Dependencies: `@nds-stack/bun-logger` → `0.1.0-beta.0`, `@nds-stack/bun-env` → `0.1.0-beta.0`
+- Version bumped from alpha to beta — all dependencies now published to npm as beta
+
+### Fixed
+- **message-stream.ts**: Separated `#append()` from `#flush()` — `push()` no longer consumes buffer before `readMessageFrom()` can read
+- **queue plugin**: `processJob()` moved inside `queuePlugin()` closure — `ReferenceError: save is not defined` fixed
+- **AbortController**: Dead `signal` event listener removed from `#readLoop()` in message-stream
+- **Reader leak**: Added `reader.cancel()` + `reader.releaseLock()` on timeout in `readMessageFrom()`
+- **Worker orchestration**: `#readFrom(reader)` — no longer silent-return on path traversal in channel names
+- **Timer leaks**: All `setTimeout`/`setInterval` in `FileWatcher`, `ReloadEngine`, `TelemetryEngine` now use `.unref()`
+- **`#tryExtract` recursion**: Guarded to prevent infinite recursion
+- **Module-level race**: `Tracer`, `ScopedBus`, `MessageBus` — class instance instead of module-level shared state
+- **`proc.kill()`**: `proc.killed` guard + `catch {}` to prevent unhandled rejection
+- **Bootstrap**: `bootstrap()` catches all rejections to prevent uncaught promise
+
 ## [0.2.0-alpha.1] — 2026-05-17
 
 ### Fixed

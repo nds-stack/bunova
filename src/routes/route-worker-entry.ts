@@ -87,8 +87,14 @@ async function main(): Promise<void> {
 
   writeStdout({ type: "ready", port, patterns: routes.map(r => r.pattern) })
 
-  // Stay alive
-  setInterval(() => {}, 60_000)
+  // Stay alive (skip in test mode — BUNOVA_TESTING prevents keeping process alive)
+  let keepAliveTimer: Timer | null = null
+  if (!process.env.BUNOVA_TESTING) {
+    keepAliveTimer = setInterval(() => {}, 60_000)
+    process.on("beforeExit", () => {
+      if (keepAliveTimer) clearInterval(keepAliveTimer)
+    })
+  }
 }
 
 function matchPattern(pattern: string, path: string): boolean {

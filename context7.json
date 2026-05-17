@@ -1,6 +1,6 @@
 {
   "$schema": "https://context7.com/schema/context7.json",
-  "projectTitle": "bunova",
+  "projectTitle": "@nds-stack/bunova",
   "description": "Bun-native application runtime layer with lifecycle management, observability, and plugin system for Bun applications",
   "url": "https://context7.com/nds-stack/bunova",
   "public_key": "pk_Zd1vpPPhPhvxg6ZjZWp5g"

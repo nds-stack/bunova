@@ -1,3 +1,4 @@
+import pkg from "../package.json"
 import { RuntimeCore } from "./runtime-core.ts"
 import { BunLogger, ConsoleTransport } from "@nds-stack/bun-logger"
 import { env as validateEnv } from "@nds-stack/bun-env"
@@ -29,6 +30,7 @@ export class Runtime {
 
   __testing(): void {
     this.#core.testing = true
+    process.env.BUNOVA_TESTING = "1"
   }
 
   get state(): LifecycleState {
@@ -234,7 +236,7 @@ export class Runtime {
     c.logger = logger
     c.orchestration.setLogger(logger)
     c.reload.setLogger(logger)
-    logger.info("Runtime booting", { version: "0.2.0-alpha.0" })
+    logger.info("Runtime booting", { version: pkg.version })
 
     // Env
     if (options.env?.schema) {
@@ -285,8 +287,20 @@ export class Runtime {
       : ObservabilityManager.create(telemetryOpts === true ? {} : telemetryOpts)
 
     // Plugin listeners + lifecycle bridges
-    c.bus.subscribe("plugin:error", (p) => { const p2 = p as { plugin?: string; error?: string }; logger.error(`Plugin error: ${p2.plugin}`, p2.error); c.pluginLifecycle.emit("error", p) })
-    c.bus.subscribe("plugin:crashed", (p) => { const p2 = p as { plugin?: string; exitCode?: number }; logger.error(`Plugin crashed: ${p2.plugin}`, { exitCode: p2.exitCode }); c.pluginLifecycle.emit("crashed", p) })
+    c.bus.subscribe("plugin:error", (p) => {
+      const payload = p as Record<string, unknown>
+      const plugin = typeof payload?.plugin === "string" ? payload.plugin : "unknown"
+      const err = typeof payload?.error === "string" ? payload.error : "unknown error"
+      logger.error(`Plugin error: ${plugin}`, err)
+      c.pluginLifecycle.emit("error", p)
+    })
+    c.bus.subscribe("plugin:crashed", (p) => {
+      const payload = p as Record<string, unknown>
+      const plugin = typeof payload?.plugin === "string" ? payload.plugin : "unknown"
+      const exitCode = typeof payload?.exitCode === "number" ? payload.exitCode : -1
+      logger.error(`Plugin crashed: ${plugin}`, { exitCode })
+      c.pluginLifecycle.emit("crashed", p)
+    })
     c.bus.subscribe("plugin:isolated", (p) => { c.pluginLifecycle.emit("isolated", p) })
 
     // Discovery
@@ -338,6 +352,8 @@ export class Runtime {
     emitLifecycle(c, "running")
   }
 
+  #shutdownTimer: Timer | null = null
+
   async shutdown(exitCode = 0): Promise<void> {
     const c = this.#core
     const state = c.lifecycle.state
@@ -349,7 +365,10 @@ export class Runtime {
     c.orchestration.stopAll()
     c.plugins.clear()
     await emitLifecycle(c, "shutdown")
-    if (!c.testing) setTimeout(() => process.exit(exitCode), 100)
+    if (!c.testing) {
+      if (this.#shutdownTimer) clearTimeout(this.#shutdownTimer)
+      this.#shutdownTimer = setTimeout(() => process.exit(exitCode), 100)
+    }
   }
 
   stats(): RuntimeStats {

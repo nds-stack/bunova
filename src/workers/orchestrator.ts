@@ -1,11 +1,10 @@
 import type { WorkerOptions, WorkerHandle, WorkerPoolStats } from "../types.ts"
 
-let nextWorkerId = 0
-
 const BACKOFF_INITIAL = 1_000
 const BACKOFF_MAX = 30_000
 
 export class WorkerOrchestrator {
+  #nextWorkerId = 0
   #workers = new Map<string, WorkerHandle>()
   #workerProcesses = new Map<string, Bun.Subprocess>()
   #options = new Map<string, WorkerOptions>()
@@ -55,7 +54,7 @@ export class WorkerOrchestrator {
   }
 
   async spawn(path: string, options: WorkerOptions = {}): Promise<WorkerHandle> {
-    const id = `worker-${++nextWorkerId}`
+    const id = `worker-${++this.#nextWorkerId}`
     const count = options.count ?? 1
     const handles: WorkerHandle[] = []
 
@@ -162,6 +161,7 @@ export class WorkerOrchestrator {
         }
       }
     }, config.interval)
+    timer.unref()
 
     this.#healthTimers.set(id, timer)
   }

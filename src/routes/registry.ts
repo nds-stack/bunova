@@ -99,6 +99,7 @@ export class RouteRegistry {
     } catch {
       worker.status = "crashed"
     } finally {
+      reader.cancel().catch(() => {})
       reader.releaseLock()
     }
 
@@ -116,20 +117,20 @@ export class RouteRegistry {
       worker.definitions = worker.definitions.filter(d => d.pattern !== pattern)
       this.#patternToKey.delete(pattern)
       if (worker.definitions.length === 0) {
-        worker.proc.kill()
+        try { worker.proc.kill() } catch { /* ignore */ }
         this.#workers.delete(key)
       }
       return
     }
 
     // Single route — kill worker
-    worker.proc.kill()
+    try { worker.proc.kill() } catch { /* ignore */ }
     this.#workers.delete(key)
     this.#patternToKey.delete(pattern)
   }
 
   clear(): void {
-    for (const [, worker] of this.#workers) worker.proc.kill()
+    for (const [, worker] of this.#workers) try { worker.proc.kill() } catch { /* ignore */ }
     this.#workers.clear()
     this.#patternToKey.clear()
   }
@@ -139,7 +140,7 @@ export class RouteRegistry {
     if (!key) return
     const worker = this.#workers.get(key)
     if (!worker) return
-    worker.proc.kill()
+    try { worker.proc.kill() } catch { /* ignore */ }
     this.#workers.delete(key)
     for (const d of worker.definitions) this.#patternToKey.delete(d.pattern)
   }

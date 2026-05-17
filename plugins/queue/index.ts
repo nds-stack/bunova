@@ -96,6 +96,34 @@ export function queuePlugin(options: QueueOptions = {}): Plugin {
     return Array.from(memJobs.values())
   }
 
+  async function processJob(job: Job, handler: JobHandler, ctx: { broadcast: Function }) {
+    job.status = "running"
+    await save(job)
+    ctx.broadcast(`${job.type}:started`, { id: job.id })
+
+    try {
+      await handler(job)
+      job.status = "done"
+      await save(job)
+      ctx.broadcast(`${job.type}:done`, { id: job.id })
+    } catch (err) {
+      job.retries++
+      const errMsg = err instanceof Error ? err.message : String(err)
+
+      if (job.retries <= job.maxRetries) {
+        job.status = "pending"
+        job.error = errMsg
+        await save(job)
+        ctx.broadcast(`${job.type}:retry`, { id: job.id, retries: job.retries, error: errMsg })
+      } else {
+        job.status = "failed"
+        job.error = errMsg
+        await save(job)
+        ctx.broadcast(`${job.type}:failed`, { id: job.id, error: errMsg })
+      }
+    }
+  }
+
   return {
     name: label,
     version: "0.1.1",
@@ -148,33 +176,5 @@ export function queuePlugin(options: QueueOptions = {}): Plugin {
         },
       }
     },
-  }
-}
-
-async function processJob(job: Job, handler: JobHandler, ctx: { broadcast: Function }) {
-  job.status = "running"
-  await save(job)
-  ctx.broadcast(`${job.type}:started`, { id: job.id })
-
-  try {
-    await handler(job)
-    job.status = "done"
-    await save(job)
-    ctx.broadcast(`${job.type}:done`, { id: job.id })
-  } catch (err) {
-    job.retries++
-    const errMsg = err instanceof Error ? err.message : String(err)
-
-    if (job.retries <= job.maxRetries) {
-      job.status = "pending"
-      job.error = errMsg
-      await save(job)
-      ctx.broadcast(`${job.type}:retry`, { id: job.id, retries: job.retries, error: errMsg })
-    } else {
-      job.status = "failed"
-      job.error = errMsg
-      await save(job)
-      ctx.broadcast(`${job.type}:failed`, { id: job.id, error: errMsg })
-    }
   }
 }

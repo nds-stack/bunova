@@ -29,11 +29,15 @@ export class MessageStream {
     this.#onMessage = handler
   }
 
-  push(chunk: Uint8Array): void {
+  #append(chunk: Uint8Array): void {
     const combined = new Uint8Array(this.#buffer.length + chunk.length)
     combined.set(this.#buffer, 0)
     combined.set(chunk, this.#buffer.length)
     this.#buffer = combined
+  }
+
+  push(chunk: Uint8Array): void {
+    this.#append(chunk)
     this.#flush()
   }
 
@@ -46,10 +50,14 @@ export class MessageStream {
         reader.read(),
         Bun.sleep(TIMEOUT_MS).then(() => null),
       ])
-      if (result === null) return null
+      if (result === null) {
+        reader.cancel().catch(() => {})
+        reader.releaseLock()
+        return null
+      }
       if (result.done) return null
 
-      this.push(result.value)
+      this.#append(result.value)
 
       const extracted = this.#tryExtract()
       if (extracted !== undefined) return extracted
@@ -70,8 +78,9 @@ export class MessageStream {
     try {
       return JSON.parse(new TextDecoder().decode(msgBytes))
     } catch {
-      return this.#tryExtract()
+      // skip malformed frame
     }
+    return undefined
   }
 
   #flush(): void {

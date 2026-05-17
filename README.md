@@ -788,6 +788,28 @@ const watchdog = runtime.onMemoryLeak(() => {
 watchdog.stop() // Disable when not needed
 ```
 
+## Limitations
+
+- **Single-process only**: Bunova runs within a single OS process. It does not provide multi-node clustering or horizontal scaling. For multi-server deployments, run Bunova behind a load balancer.
+- **No persistent state**: The runtime does not persist lifecycle state, telemetry history, or worker metadata to disk. All state is in-memory and lost on process restart.
+- **Worker isolation overhead**: Worker-isolated plugins spawn separate Bun subprocesses, which adds memory and startup overhead. Use in-process plugins for low-latency, high-frequency operations.
+- **No Windows signal handling**: Bun's signal support on Windows is limited. SIGINT/SIGTERM handlers may not work reliably on Windows.
+- **IPC throughput**: The current stdin/stdout JSON-based IPC is adequate for control-plane messages but not for high-throughput data streaming. Unix socket support is planned.
+- **Telemetry granularity**: Telemetry snapshots are collected at fixed intervals (default 5s). Sub-interval spikes in memory or event-loop lag may not be captured.
+
+## Multi-Instance / Cross-Boundary
+
+Bunova is designed as a **single-process runtime**. When running multiple instances of Bunova (e.g., behind a load balancer, in containers, or across processes):
+
+- **No shared state**: Each Bunova instance has its own in-memory state (lifecycle, telemetry, workers, plugins). There is no built-in inter-instance communication or distributed state.
+- **No leader election**: Multiple instances run independently. Use an external load balancer (HAProxy, Nginx, or a cloud LB) for request distribution.
+- **Worker isolation per instance**: Workers and route workers are scoped to their owning runtime instance. They are not visible to other instances.
+- **Plugin data isolation**: Plugin state (in-process or worker-isolated) is private to each instance. For shared state across instances, use an external store (Redis, SQLite via `bun:sqlite`, or a database).
+- **Telemetry per instance**: Each instance collects its own telemetry independently. Aggregate metrics across instances using an external monitoring system.
+- **Graceful shutdown**: Each instance handles SIGTERM/SIGINT independently. Ensure your orchestrator (Docker, Kubernetes, systemd) sends signals to all instances.
+
+For multi-instance coordination (service discovery, distributed caching, pub/sub across instances), use external infrastructure — Bunova is intentionally scoped to single-process runtime concerns.
+
 ## License
 
 MIT

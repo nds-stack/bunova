@@ -34,6 +34,7 @@ export class MemoryWatchdog {
         this.#callback?.()
       }
     }, this.#interval)
+    this.#timer.unref()
   }
 
   stop(): void {

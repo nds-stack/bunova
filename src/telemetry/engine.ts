@@ -40,10 +40,12 @@ export class TelemetryEngine {
   start(): void {
     if (this.#timer) return
     this.#startedAt = new Date().toISOString()
-    this.#timer = setInterval(async () => {
-      this.#lastEventLoopLag = await this.#measureEventLoop()
-      this.#pushSnapshot()
+    this.#timer = setInterval(() => {
+      this.#measureEventLoop()
+        .then(lag => { this.#lastEventLoopLag = lag; this.#pushSnapshot() })
+        .catch(err => console.error("telemetry tick error", err))
     }, this.#interval)
+    this.#timer.unref()
   }
 
   stop(): void {

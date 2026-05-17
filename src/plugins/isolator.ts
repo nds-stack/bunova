@@ -27,8 +27,7 @@ export class PluginIsolator {
   async spawnWorker(pluginPath: string, ctx: PluginContext): Promise<void> {
     // Sanitize: prevent path traversal
     if (pluginPath.includes("..")) {
-      ctx.broadcast("plugin:error", { plugin: pluginPath, error: "Path traversal detected" })
-      return
+      throw new Error("Path traversal detected in plugin path")
     }
 
     const name = pluginPath.split("/").pop()?.replace(/\.(ts|js)$/, "") ?? "unknown"
@@ -75,7 +74,7 @@ export class PluginIsolator {
         } else if (m.type === "broadcast" && typeof m.channel === "string") {
           ctx.broadcast(m.channel, m.payload)
         } else if (m.type === "error") {
-          ctx.broadcast("plugin:error", { plugin: name, error: m.message })
+          ctx.broadcast("plugin:error", { plugin: name, error: typeof m.message === "string" ? m.message : String(m.message) })
         }
         // Unknown message types silently dropped — prevents
         // malformed or malicious payloads from affecting the runtime
@@ -83,6 +82,7 @@ export class PluginIsolator {
     } catch {
       // stream error
     } finally {
+      reader.cancel().catch(() => {})
       reader.releaseLock()
     }
 

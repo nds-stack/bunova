@@ -14,9 +14,9 @@ let plugin: Plugin | null = null
 
 async function handleInstall(msg: PluginMessage): Promise<void> {
   try {
-    if (msg.path) {
-      // Security: reject path traversal
-      if (msg.path.includes("..") || msg.path.startsWith("/")) {
+      if (msg.path) {
+      // Security: reject path traversal (cross-platform)
+      if (msg.path.includes("..") || /^[/\\]|[a-zA-Z]:[/\\]/.test(msg.path)) {
         writeStdout({ type: "error", name: msg.name, message: "Invalid plugin path" })
         process.exit(1)
         return
@@ -52,7 +52,7 @@ async function handleUninstall(msg: PluginMessage): Promise<void> {
 }
 
 async function handleEvent(msg: PluginMessage): Promise<void> {
-  writeStdout({ type: "broadcast", name: msg.name, channel: `${msg.name}:event`, payload: msg })
+  writeStdout({ type: "broadcast", name: msg.name, channel: `${msg.name}:event`, payload: msg.payload })
 }
 
 async function main(): Promise<void> {
@@ -74,6 +74,10 @@ async function main(): Promise<void> {
 
   if (msg.type === "install") {
     await handleInstall(msg)
+    if (process.env.BUNOVA_TESTING) {
+      process.exit(0)
+      return
+    }
   }
 
   if (msg.type === "uninstall") {
