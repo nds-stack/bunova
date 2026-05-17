@@ -1,0 +1,18 @@
+{
+  "name": "@bunova/queue",
+  "version": "0.1.0-alpha.0",
+  "description": "Bunova plugin — background job orchestration with retry & scheduling",
+  "author": "nds-stack <nds.stack@gmail.com>",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": { ".": { "import": "./dist/index.js", "types": "./dist/index.d.ts" } },
+  "scripts": { "test": "bun test", "typecheck": "tsc --noEmit", "build": "bun build ./src/index.ts --outdir=./dist --target=bun --format=esm" },
+  "dependencies": { "bunova": "^0.2.0-alpha.0" },
+  "peerDependencies": { "@nds-stack/bunql": "^0.1.0-alpha.7" },
+  "peerDependenciesMeta": { "@nds-stack/bunql": { "optional": true } },
+  "engines": { "bun": ">=1.3.0" },
+  "keywords": ["bun", "queue", "bunova", "jobs", "background"],
+  "license": "MIT",
+  "publishConfig": { "access": "public" }
+}

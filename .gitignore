@@ -1,0 +1,47 @@
+# dependencies
+node_modules
+
+# output
+out
+dist
+*.tgz
+
+# code coverage
+coverage
+*.lcov
+
+# AI agent files
+agents/
+
+# docs (excluded from git)
+AGENTS.md
+PROJECT.md
+AUDIT.md
+RULES.md
+TODO.md
+CHANGELOG.md
+audit-report-*.md
+
+# logs
+logs
+*.log
+
+# dotenv
+.env
+.env.*.local
+
+# caches
+.eslintcache
+.cache
+*.tsbuildinfo
+
+# IDE
+.idea
+*.swp
+*.swo
+
+# OS
+.DS_Store
+
+# files
+*.zip

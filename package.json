@@ -1,0 +1,67 @@
+{
+  "name": "bunova",
+  "version": "0.2.0-alpha.0",
+  "description": "Bun-native application runtime layer — lifecycle management, observability, and plugin system for Bun applications",
+  "author": "nds-stack <nds.stack@gmail.com>",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "scripts": {
+    "test": "bun test ./test/",
+    "test:plugins": "echo 'Plugin tests need standalone bunova package — run: bun test ./test-plugins/'",
+    "test:all": "bun test ./test/",
+    "test:watch": "bun test --watch",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "typecheck": "tsc --noEmit",
+    "typecheck:plugins": "cd test-plugins && tsc --noEmit --project ../tsconfig.json 2>nul || echo Plugin tests skipped (standalone)",
+    "bench": "bun run bench/runtime.bench.ts",
+    "prepublishOnly": "bun run lint && bun run typecheck && bun test && bun run build",
+    "build": "bun build ./src/index.ts --outdir=./dist --target=bun --format=esm && tsc -p tsconfig.build.json",
+    "clean": "bun run --bun \"rm -rf dist\""
+  },
+  "files": [
+    "dist/",
+    "README.md"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nds-stack/bunova.git"
+  },
+  "bugs": {
+    "url": "https://github.com/nds-stack/bunova/issues"
+  },
+  "homepage": "https://github.com/nds-stack/bunova#readme",
+  "publishConfig": {
+    "access": "public"
+  },
+  "dependencies": {
+    "@nds-stack/bun-logger": "^0.1.0-alpha.0",
+    "@nds-stack/bun-env": "^0.1.0-alpha.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/bun": "latest",
+    "eslint": "^10.3.0",
+    "typescript-eslint": "^8.59.2"
+  },
+  "engines": {
+    "bun": ">=1.3.0"
+  },
+  "keywords": [
+    "bun",
+    "runtime",
+    "lifecycle",
+    "application-runtime",
+    "plugin-system",
+    "observability",
+    "typescript"
+  ],
+  "license": "MIT"
+}
