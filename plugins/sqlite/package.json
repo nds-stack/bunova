@@ -18,7 +18,7 @@
     "build": "bun build ./src/index.ts --outdir=./dist --target=bun --format=esm"
   },
   "dependencies": {
-    "@nds-stack/bunql": "^0.1.0-alpha.7",
+    "@nds-stack/bunql": "^0.1.0",
     "bunova": "^0.2.0-alpha.0"
   },
   "engines": {

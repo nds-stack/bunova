@@ -13,14 +13,10 @@ coverage
 # AI agent files
 agents/
 
-# docs (excluded from git)
-AGENTS.md
-PROJECT.md
-AUDIT.md
-RULES.md
-TODO.md
-CHANGELOG.md
-audit-report-*.md
+# docs (keep only README + CHANGELOG)
+*.md
+!README.md
+!CHANGELOG.md
 
 # logs
 logs

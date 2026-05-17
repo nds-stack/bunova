@@ -9,7 +9,7 @@
   "exports": { ".": { "import": "./dist/index.js", "types": "./dist/index.d.ts" } },
   "scripts": { "test": "bun test", "typecheck": "tsc --noEmit", "build": "bun build ./src/index.ts --outdir=./dist --target=bun --format=esm" },
   "dependencies": { "bunova": "^0.2.0-alpha.0" },
-  "peerDependencies": { "@nds-stack/bunql": "^0.1.0-alpha.7" },
+  "peerDependencies": { "@nds-stack/bunql": "^0.1.0" },
   "peerDependenciesMeta": { "@nds-stack/bunql": { "optional": true } },
   "engines": { "bun": ">=1.3.0" },
   "keywords": ["bun", "queue", "bunova", "jobs", "background"],

@@ -30,7 +30,7 @@ export function sqlitePlugin(options: SQLitePluginOptions): Plugin {
       // Periodic metrics
       timer = setInterval(() => {
         try {
-          const metrics: BunQLMetrics = db.metrics()
+          const metrics: BunQLMetrics = db.metrics
           ctx.broadcast(`${label}:metrics`, {
             writes: metrics.writes,
             reads: metrics.reads,
